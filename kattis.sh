@@ -9,5 +9,8 @@ rm samples.zip
 
 cp -r ../_template/* .
 
+#Start default program (visual studio)
+start Kattis.sln &
+
 
 
