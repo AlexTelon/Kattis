@@ -12,8 +12,9 @@ namespace Kattis
         {
 
             List<int> tokens = Console.ReadLine().Split().Select(int.Parse).ToList();
+            int n = int.Parse(Console.ReadLine());
 
-          
+
         }
     }
 }
