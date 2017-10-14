@@ -12,9 +12,20 @@ namespace Kattis
         {
 
             List<int> tokens = Console.ReadLine().Split().Select(int.Parse).ToList();
+            int sum = 0;
+
             int n = int.Parse(Console.ReadLine());
+            var results = new List<string>();
+
+            for (int i = 0; i < n; i++)
+            {
+
+            }
 
 
+            Console.WriteLine(String.Join("\n", results));
+
+            Console.WriteLine(sum);
         }
     }
 }
