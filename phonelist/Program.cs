@@ -10,8 +10,9 @@ namespace Kattis
     {
         class Node
         {
-            public bool IsLeaf => children.Count == 0;
-            Dictionary<int, Node> children = new Dictionary<int, Node>();
+            public bool IsLeaf = true;
+            //Dictionary<int, Node> children = new Dictionary<int, Node>();
+            Node[] children = new Node[10];
 
             /// <summary>
             /// its the callee that checks the index
@@ -30,18 +31,19 @@ namespace Kattis
                 }
 
                 int number = numbers[index];
-                if (children.ContainsKey(number))
+                if (children[number] != null)
                 {
                     if (children[number].IsLeaf) return false;
                 } else
                 {
+                    IsLeaf = false;
                     children[number] = new Node();
                 }
-
                 return children[number].Visit(numbers, ++index);
             }
-
         }
+
+        add a try catch and then do different exit codes depending on what I get? That might give me info on the exception I got?
 
         static void Main(string[] args)
         {
@@ -68,6 +70,7 @@ namespace Kattis
                 }
                 Console.WriteLine(consistent);
             }
+            Console.ReadLine();
         }
     }
 }
