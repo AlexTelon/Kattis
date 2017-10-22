@@ -17,7 +17,6 @@ namespace Kattis
 
             internal void JoinEqualPlayer(List<int> equal)
             {
-                // Check for inconsistency at this stage?
                 EqualPlayers.AddRange(equal);
             }
 
@@ -30,7 +29,6 @@ namespace Kattis
             {
                 GreaterPlayers.AddRange(greater);
             }
-
         }
 
         class Results
@@ -70,13 +68,11 @@ namespace Kattis
             {
                 if (players.Count == 0) return;
 
-                //List<int> stuff = new List<int>();
                 foreach (var id in players)
                 {
                     stuff.Add(id);
 
                     // are there any new equalplayers?
-
                     var newPlayers = results[id].EqualPlayers.Where(x => !stuff.Contains(x)).ToList();
 
                     FindAllEqualTo(newPlayers, stuff);
@@ -87,7 +83,7 @@ namespace Kattis
             internal HashSet<int> FindAllEqualTo(int p2)
             {
                 // send in list of all found so far
-                var stuff = new HashSet<int>() { p2 };
+                var stuff = new HashSet<int>();
                 // make sure to call results through the indexer here so it can handle if p2 is null
                 FindAllEqualTo(this[p2].EqualPlayers, stuff);
                 return stuff;
@@ -105,20 +101,7 @@ namespace Kattis
 
                     var newLesserPlayers = results[id].LesserPlayers.Where(x => !stuff.Contains(x)).ToList();
                     FindAllLesserOrEqual(newLesserPlayers, stuff);
-                    // these two are not needed since these are added in the recursive call.
-                    //stuff.AddRange(results[id].LesserPlayers); // add all that are smaller than us
-                    //stuff.AddRange(results[id].EqualPlayers); // all all that are equal to us
-
-                    //var newPlayers = 
-
-                    //stuff.AddRange(FindAllLesserOrEqual(results[id].LesserPlayers)); // find all lesser to our lessers
-
-                    //stuff.AddRange(FindAllLesserOrEqual(results[id].EqualPlayers)); // find all equal to our lessers // EXCLUDED DUE TO INFINITE LOOP, NEED TO MAKE SURE NOT ONLY INCLUDE NEW PLAYERS SOMEHOW
                 }
-
-                //make sure these are added too
-                //stuff.AddRange(players);
-                //return stuff;
             }
 
             internal HashSet<int> FindAllLesser(int p2)
@@ -148,21 +131,7 @@ namespace Kattis
 
                     var newEqualPlayers = results[id].EqualPlayers.Where(x => !stuff.Contains(x)).ToList();
                     FindAllGreaterOrEqual(newEqualPlayers, stuff);
-
-
-                    // these two are not needed since these are added in the recursive call.
-                    //stuff.AddRange(results[id].GreaterPlayers); // add all greater players
-                    //stuff.AddRange(results[id].EqualPlayers); // add all equal players
-
-                    //stuff.AddRange(FindAllGreaterOrEqual(results[id].GreaterPlayers)); // find all greater than our greater
-                    //stuff.AddRange(FindAllGreaterOrEqual(results[id].EqualPlayers)); // find all equal to our greater // EXCLUDED DUE TO INFINITE LOOP, NEED TO MAKE SURE NOT ONLY INCLUDE NEW PLAYERS SOMEHOW
-
                 }
-
-                //make sure these are added too
-                //stuff.AddRange(players);
-
-                //return stuff;
             }
         }
 
@@ -190,7 +159,11 @@ namespace Kattis
 
                 node = new Node();
 
-                if (op == '>') node.LesserPlayers.Add(p2);
+                if (op == '>')
+                {
+                    node.LesserPlayers.Add(p2);
+                    results[p2].GreaterPlayers.Add(p1);
+                }
                 else
                 {
                     node.EqualPlayers.Add(p2);
@@ -213,17 +186,17 @@ namespace Kattis
             else node.EqualPlayers.Add(b);
 
             // ok so we have our last node.
+            HashSet<int> equalToB = results.FindAllEqualTo(b); // all players equal to b
+            HashSet<int> weakerThanB = results.FindAllLesser(b); // all players weaker than b
 
-            HashSet<int> bEqual = results.FindAllEqualTo(b); // all players equal to b
-            HashSet<int> bSmaller = results.FindAllLesser(b); // all players weaker than b
-            HashSet<int> bLarger = results.FindAllGreater(b); // all players stronger than b
+            HashSet<int> greaterThanA = results.FindAllGreater(a); // all players stronger than a
 
             if (op == '>')
             {
                 // Everythin in bGroup must be smaller than a, no other relation may exist to a
                 List<int> bGroup = new List<int>();
-                bGroup.AddRange(bEqual);
-                bGroup.AddRange(bSmaller);
+                bGroup.AddRange(equalToB);
+                bGroup.AddRange(weakerThanB);
 
                 if (bGroup.Any(x => x == a))
                 {
@@ -232,44 +205,50 @@ namespace Kattis
                     return;
                 }
 
+                if (greaterThanA.Any(x => x == b))
+                {
+                    //inconsistent! b is larger than a
+                    Console.WriteLine("inconsistent");
+                    return;
+                }
+
+
                 Console.WriteLine("consistent");
                 return;
             }
             else
             {
-                //HashSet<int> aEqual = results.FindAllEqualTo(a); // all players equal to a
-                HashSet<int> aSmaller = results.FindAllLesser(a); // all players weaker than a
-                HashSet<int> aLarger = results.FindAllGreater(a); // all players stronger than a
+                //HashSet<int> aEqual = results.FindAllEqualTo(a); // all players equal to a, never needed.
+                HashSet<int> weakerThanA = results.FindAllLesser(a); // all players weaker than a
+                HashSet<int> greaterThanB = results.FindAllGreater(b); // all players stronger than b
 
-                if (bLarger.Any(x => x == a))
+                if (greaterThanB.Any(x => x == a))
                 {
                     //inconsistent, a cannot be both larger and equal to b
                     Console.WriteLine("inconsistent");
                     return;
                 }
 
-                if (bSmaller.Any(x => x == a))
+                if (weakerThanB.Any(x => x == a))
                 {
                     //inconsistent, a cannot be smaller and equal to b
                     Console.WriteLine("inconsistent");
                     return;
                 }
 
-                if (aLarger.Any(x => x == b))
+                if (greaterThanA.Any(x => x == b))
                 {
                     //inconsistent, a cannot be both larger and equal to b
                     Console.WriteLine("inconsistent");
                     return;
                 }
 
-                if (aSmaller.Any(x => x == b))
+                if (weakerThanA.Any(x => x == b))
                 {
                     //inconsistent, a cannot be smaller and equal to b
                     Console.WriteLine("inconsistent");
                     return;
                 }
-
-
 
                 Console.WriteLine("consistent");
                 return;
