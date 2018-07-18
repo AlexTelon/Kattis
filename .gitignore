@@ -39,8 +39,9 @@ dist/
 # Flycheck
 flycheck_*.el
 
+# override this thing, a task was named server
 # server auth directory
-/server/
+# /server/
 
 # projectiles files
 .projectile
