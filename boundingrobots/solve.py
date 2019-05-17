@@ -1,26 +1,29 @@
-from dataclasses import dataclass
-
-@dataclass(frozen=True)
 class Position:
-    """Immutable position/vector class that handels the needed add and multiply methods"""
+    """Wannabe Immutable position/vector class that handels the needed add and multiply methods"""
     x: int
     y: int
 
     # The x and y values are not to be below 0 or above the below values.
-    # Nothing hinders you from initializing the values wrong since I have not manually created a constructor,
-    # but __add__ and __mul__ will not return new values outside these ranges if specified.
     max_x: int = None
     max_y: int = None
 
+    def __init__(self, x, y, max_x = None, max_y = None):
+        self.max_x = max_x
+        self.max_y = max_y
+        self.x = self._within_bounds(x, self.max_x)
+        self.y = self._within_bounds(y, self.max_y)
+
     def __add__(self, other):
-        x = self._within_bounds(self.x + other.x, self.max_x)
-        y = self._within_bounds(self.y + other.y, self.max_y)
-        return Position(x, y, max_x=self.max_x, max_y=self.max_y)
+        return Position(self.x + other.x,
+                        self.y + other.y,
+                        max_x=self.max_x,
+                        max_y=self.max_y)
 
     def __mul__(self, const):
-        x = self._within_bounds(self.x * const, self.max_x)
-        y = self._within_bounds(self.y * const, self.max_y)
-        return Position(x, y, max_x=self.max_x, max_y=self.max_y)
+        return Position(self.x * const,
+                        self.y * const,
+                        max_x=self.max_x,
+                        max_y=self.max_y)
 
     def _within_bounds(self, a, max_a):
         if max_a:
